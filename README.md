@@ -19,6 +19,7 @@ Currently I’m testing features and much things probably will change.
   - Setting `TMP` before execution puts you in the exact same environment like before
 - Bash execution is strict started with
 - Will load `Justfunctions`if present
+- Coloring of STDERR
 
 ### Bash Functions
 
@@ -41,17 +42,18 @@ fi
 
 ```bash
 TMP=$(mktemp -d)
-curl -o - -SLf "https://github.com/casey/just/releases/download/v0.7.1/just-v0.7.1-x86_64-unknown-linux-musl.tar.gz" \
-	| tar -c "$TMP" -zxvf -
-install -D -m 755 just "$PREFIX/bin/just" \
-install -D just.1 "$PREFIX/share/man/man1/" \
-install -D LICENSE "$PREFIX/share/doc/just/copyright"
+curl --progress-bar -o - -SLf "https://github.com/casey/just/releases/download/v0.7.1/just-v0.7.1-x86_64-unknown-linux-musl.tar.gz" \
+	| tar -C "$TMP" -zxf -
+install -D -m 755 $TMP/just "$PREFIX/bin/just" 
+install -D $TMP/just.1 "$PREFIX/share/man/man1/" 
+install -D $TMP/LICENSE "$PREFIX/share/doc/just/copyright"
 ```
 
 ### Install Justbash
 
-```bash
-curl 
+``` bash
+curl --progress-bar -sSfL https://raw.githubusercontent.com/blurayne/justbash/main/Justbash -o - \
+	| install -m 755 /dev/stdin "$PREFIX/bin/Justbash"
 ```
 
 ## Usage
