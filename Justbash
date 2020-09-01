@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
 
 # Strict bash scripting
-set -uo pipefail -o errtrace 
+set -uo pipefail -o errtrace
+
 
 # We use parent to share a temporary working directory (this does the magic!)
 export TMP="${TMP:-/tmp/just-$PPID}"
 
 # Bash could use that directory as well
-export TMPDIR="${TMP}" 
+export TMPDIR="${TMP}"
 
 # Some version information (we could use that in future releases!)
 export JUSTSHELL="0.1"
 export JUSTBASH="0.1"
 
 # Export everything we will declare (except functions - they will be later on)
-set -o allexport 
+set -o allexport
 
 # NOTE: Aliases won't be inherited by child processes!
 
@@ -25,8 +26,8 @@ set -o allexport
 # Output to STDERR (red)
 # param1: message
 err() {
-  local message="$1"
-  >&2 echo -e "${message}"
+	local message="$1"
+	>&2 echo -e "${message}"
 }
 
 ##
@@ -44,19 +45,19 @@ raise_err() {
 # Format as title (yellow)
 # param1: message
 title() {
-  local title="$1"
-  echo -ne "\e[33m\e[1m"
-  echo -n "${title}"
-  echo -e "\e[0m"
+	local title="$1"
+	echo -ne "\e[33m\e[1m"
+	echo -n "${title}"
+	echo -e "\e[0m"
 }
 
 ##
 # Highlight a string (bold-white)
 # param1: message
 highlight() {
-  local title="$1"
-  echo -ne "\e[1m"
-  echo -n "${title}"
+	local title="$1"
+	echo -ne "\e[1m"
+	echo -n "${title}"
 	echo -e "\e[0m"
 }
 
@@ -84,15 +85,30 @@ array-contains() {
 	return 1
 }
 
+
 ##
-# compare one version  against another
+# write to a path/.filename
+# then rename to path/filename
+# to prevent a long running output pipe that was launched unintentionaly
+# to overwrite an important file
+# param1: filename
+dot_rewrite() {
+   local fp="$1"
+   local d="$(dirname "$1")"
+   local f="$(basename "$1")"
+   cat - > "$d/.$f"
+   mv "$d/$f" "$d/.$f"
+}
+
+##
+# compare one version against another
 # param1: version 1
 # param2: operater (like used by test)
 # param3: version 2
 vercomp() {
 	local IFS=.
 	local a=($1) op="$2" b=($3)
-	test $(printf "%d%03d%03d%03d" "${a[@]}")  "$op"  $(printf "%d%03d%03d%03d" "${b[@]}")
+	test $(printf "%d%03d%03d%03d" "${a[@]}") "$op" $(printf "%d%03d%03d%03d" "${b[@]}")
 }
 
 ##
@@ -103,53 +119,53 @@ noerr() {
 }
 
 ##
-# Check if a certain version of a tool is installed 
+# Check if a certain version of a tool is installed
 # param1: bin
 # param2: option or rest of command to get version
 # param3: operator
 # param4: required version
 req-bin() {
-  local bin="$1"
-  local binpath="$(which "$bin" 2>/dev/null )"
-  if [[ -z "$binpath" ]]; then
-	err "req-bin: $bin not found"
-	return 1
-  fi
-  if [[ -z "${2:-}" ]]; then
-	echo "$binpath OK"
-	return 0
-  fi
-  if [[ "${2:-}" ]]; then
-	local optversion="${2}"
-	local vercomp="${3}"
-	local reqversion="${4}"
-	local version="$(source <(echo -n "$bin $optversion" ) | grep -E -o '([0-9]+)(\.[0-9]+)?(.[0_9]+)?' | head -1)"
-	if [[ -z "$version" ]]; then
-	  err "req-bin: could not get version for $binpath"
-	  return 1
+	local bin="$1"
+	local binpath="$(which "$bin" 2>/dev/null )"
+	if [[ -z "$binpath" ]]; then
+		err "req-bin: $bin not found"
+		return 1
 	fi
-	if vercomp $version $vercomp $reqversion; then
-	  echo "$binpath (v$version) OK"
-	else
-	  err "req-bin: version mismatch in $binpath ($3 $4?)"
-	  return 1
+	if [[ -z "${2:-}" ]]; then
+		echo "$binpath OK"
+		return 0
 	fi
-  fi
+	if [[ "${2:-}" ]]; then
+		local optversion="${2}"
+		local vercomp="${3}"
+		local reqversion="${4}"
+		local version="$(source <(echo -n "$bin $optversion" ) | grep -E -o '([0-9]+)(\.[0-9]+)?(.[0_9]+)?' | head -1)"
+		if [[ -z "$version" ]]; then
+			err "req-bin: could not get version for $binpath"
+			return 1
+		fi
+		if vercomp $version $vercomp $reqversion; then
+			echo "$binpath (v$version) OK"
+		else
+			err "req-bin: version mismatch in $binpath ($3 $4?)"
+			return 1
+		fi
+	fi
 }
 
 # print declaration of an env variable
 # param1: key
 print-env() {
-  local env_key="$1"
-  echo "${env_key}=$(printf "%q" "${!env_key}")"
+	local env_key="$1"
+	echo "${env_key}=$(printf "%q" "${!env_key}")"
 }
 
 ##
 # Check if a certain binary is in search path
 # param1: canary name of binary
 has-bin() {
-  local bin="$1"
-  which "${bin}" 1>/dev/null 2>&1
+	local bin="$1"
+	which "${bin}" 1>/dev/null 2>&1
 }
 
 ##
@@ -174,20 +190,21 @@ import() {
 # unmount syncronously
 # param1: path
 umount-sync() {
-  local busy=1 success
-  while [[ "${busy}" -eq 1 ]]; do
-	if mountpoint -q "${1}"; then
-	  sudo umount -l "${1}" && success=1 || success=0 2> /dev/null
-	  if [ "${success}" -eq 0 ]; then
-		busy=0  # umount suc# cessful
-	  else
-		sleep .1
-	  fi
-	else
-	  busy=0  # not mounted
-	fi
-  done
+	local busy=1 success
+	while [[ "${busy}" -eq 1 ]]; do
+		if mountpoint -q "${1}"; then
+			sudo umount -l "${1}" && success=1 || success=0 2> /dev/null
+			if [ "${success}" -eq 0 ]; then
+				busy=0	# umount suc# cessful
+			else
+				sleep .1
+			fi
+		else
+			busy=0	# not mounted
+		fi
+	done
 }
+
 ##
 # check if path is empty
 # param1: path
@@ -199,7 +216,7 @@ is-path-empty() {
 	return 1
 }
 
-## 
+##
 # @ tag for bash files
 # - uses alias
 
@@ -246,7 +263,7 @@ __dbg_trap() {
 	fi
 
 	# load bash script into buffer
-  	if [[ "$_BASH_SOURCE" != *"Justbash"* ]] &&  [[ "$__DBG_CURRENT_FILE" != "$_BASH_SOURCE"* ]]; then
+	if [[ "$_BASH_SOURCE" != *"Justbash"* ]] &&	[[ "$__DBG_CURRENT_FILE" != "$_BASH_SOURCE"* ]]; then
 		__DBG_LAST_LINE=0
 		__DBG_CURRENT_FILE="$_BASH_SOURCE"
 		__DBG_CURRENT_FB=()
@@ -309,27 +326,27 @@ __shutdown() {
 }
 
 trap __shutdown EXIT
-# source "./Justfunctions"
 
 ##
 # Init
 
 # Create temp directory if not yet existent
-if [[ ! -d "${TMP}" ]]; then 
+if [[ ! -d "${TMP}" ]]; then
 	mkdir -m 700 -p "$TMP"
-elif [[ -e "${TMP}/.justrc" ]]; then 
+elif [[ -e "${TMP}/.justrc" ]]; then
 	source "${TMP}/.justrc"
 fi
 
-if [[ -e "${PWD}/Justfunctions" ]]; then 
-	source ""${PWD}/Justfunctions""
+if [[ -e "${PWD}/Justfunctions" ]]; then
+	source "${PWD}/Justfunctions"
 fi
 
-# Determine if we have better than envsubst  – like renvsubst or shenvsubst ;)
-__ENVSUBST="$(unalias envsubst 2>/dev/null; which renvsubst shenvsubst envsubst | head -1)"
+# Determine if we have better than envsubst – like renvsubst or shenvsubst ;)
+__ENVSUBST="$(unalias envsubst 2>/dev/null; which renvsubst shenvsubst envsubst | head -1 || true)"
+
 # shenvsubst can be inlined
 if [[ "${__ENVSUBST##*/}" == "shenvsubst" ]]; then
-	source "${__ENVSUBST}"
+	source "${__ENVSUBST}" || true
 fi
 
 ##
@@ -353,22 +370,22 @@ alias export="export-env"
 mapfile -t OLD_ENV < <(declare -x)
 
 ## export all functions
-declare -F |  while read line; do declare -fx ${line##*-f }; done;
+declare -F | while read line; do declare -fx "${line##*-f }"; done || true
 
-main()  {
+main() {
 	declare -x CMD_ARGS=()	
 	while [ "${#@}" -gt 0 ]; do
 		case "$1" in
 			-*) CMD_ARG+=("$1");;
 			+*) CMD_ARG+=("$1");;
 			-i) set +euo pipefail; CMD_ARG+=("$1");;
-			-c) 
+			-c)
 				shift;
 				eval "$1";
 				exit 0;;
-			*) 
+			*)
 				# could be /tmp/justxxxx/
-				if [[ ! -f "$1" ]]; then 
+				if [[ ! -f "$1" ]]; then
 					# if not and not attached
 					if [[ ! -t /dev/stdin ]] ; then
 						eval "$@";
@@ -383,7 +400,7 @@ main()  {
 				# Export source for our ebug trap
 				export __DBG_SOURCE="$1"
 				# Imit our debug trap
-				trap __dbg_trap DEBUG 
+				trap __dbg_trap DEBUG
 				source "$__DBG_SOURCE";
 				exit 0
 		esac
@@ -397,7 +414,6 @@ main()  {
 		## ensure auto-comletion
 		set +euo pipefail
 		source <(just --completions bash)
-		
 	fi
 	/usr/bin/env -S bash -E "${CMD_ARGS[@]}"
 

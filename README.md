@@ -20,6 +20,7 @@ Currently I’m testing features and much things probably will change.
 - Bash execution is strict started with
 - Will load `Justfunctions`if present
 - Coloring of STDERR
+- Show output copy’n’paste style with [renvsubst](https://github.com/FujiHaruka/renvsubst)
 
 ### Bash Functions
 
@@ -41,12 +42,7 @@ fi
 ### Install Just (if not yet done)
 
 ```bash
-TMP=$(mktemp -d)
-curl --progress-bar -o - -SLf "https://github.com/casey/just/releases/download/v0.7.1/just-v0.7.1-x86_64-unknown-linux-musl.tar.gz" \
-	| tar -C "$TMP" -zxf -
-install -D -m 755 $TMP/just "$PREFIX/bin/just" 
-install -D $TMP/just.1 "$PREFIX/share/man/man1/" 
-install -D $TMP/LICENSE "$PREFIX/share/doc/just/copyright"
+curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to $HOME/.local/bin
 ```
 
 ### Install Justbash
@@ -86,11 +82,13 @@ foobar: environment-foo
 ## Todo
 
 - `@@` annotation
-
 - Better error handler (Just uses the lineno in the Justfile only)
-
-  
+- Get `shenvsubst` ready
 
 ## Trackback
 
 - https://github.com/microsoft/just
+
+- https://github.com/FujiHaruka/renvsubst
+
+  
